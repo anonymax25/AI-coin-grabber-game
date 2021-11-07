@@ -26,11 +26,11 @@ SIMPLE_MAZE = [
     [0, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 0],
     [0, 3, 2, 2, 2, 2, 3, 2, 2, 2, 2, 2, 2, 2, 2, 3, 2, 2, 2, 5, 3, 0],
     [0, 3, 2, 3, 3, 2, 3, 2, 3, 3, 3, 3, 3, 3, 2, 3, 2, 3, 3, 2, 3, 0],
-    [0, 3, 2, 3, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 3, 2, 3, 0],
+    [0, 3, 2, 3, 2, 2, 2, 2, 2, 2, 2, 1, 2, 2, 2, 2, 2, 2, 3, 2, 3, 0],
     [0, 3, 2, 3, 2, 3, 3, 2, 3, 3, 3, 3, 3, 3, 2, 3, 3, 2, 3, 2, 3, 0],
     [0, 3, 2, 2, 2, 2, 2, 2, 3, 4, 4, 4, 4, 3, 2, 2, 2, 2, 2, 2, 3, 0],
     [0, 3, 2, 3, 2, 3, 3, 2, 3, 3, 4, 4, 3, 3, 2, 3, 3, 2, 3, 2, 3, 0],
-    [0, 3, 2, 3, 2, 2, 2, 2, 2, 1, 1, 1, 1, 2, 2, 2, 2, 2, 3, 2, 3, 0],
+    [0, 3, 2, 3, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 3, 2, 3, 0],
     [0, 3, 2, 3, 3, 2, 3, 2, 3, 3, 3, 3, 3, 3, 2, 3, 2, 3, 3, 2, 3, 0],
     [0, 3, 5, 2, 2, 2, 3, 2, 2, 2, 2, 2, 2, 2, 2, 3, 2, 2, 2, 2, 3, 0],
     [0, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 0],
@@ -87,10 +87,6 @@ class MyGame(arcade.Window):
         arcade.set_background_color(arcade.color.BLACK)
 
     def on_draw(self):
-        """
-        Render the screen.
-        """
-
         # This command has to happen before we start drawing
         arcade.start_render()
 
@@ -98,9 +94,7 @@ class MyGame(arcade.Window):
         for row in range(ROW_COUNT):
             for column in range(COLUMN_COUNT):
                 # Figure out what color to draw the box
-                if self.grid[row][column] in [0, 1, 4]:
-                    color = arcade.color.BLACK
-                elif self.grid[row][column] == 3:
+                if self.grid[row][column] == 3:
                     color = arcade.color.BLUEBONNET
                 elif self.grid[row][column] == 2:
                     color = arcade.color.GOLDENROD
@@ -108,6 +102,8 @@ class MyGame(arcade.Window):
                 elif self.grid[row][column] == 5:
                     color = arcade.color.RED_DEVIL
                     radius = 8
+                else:
+                    color = arcade.color.BLACK
 
                 # Do the math to figure out where the box is
                 x = WIDTH * column + WIDTH // 2
@@ -116,6 +112,8 @@ class MyGame(arcade.Window):
                 # Draw the box
                 if self.grid[row][column] in [2, 5]:
                     arcade.draw_circle_filled(x, y, radius, color)
+                elif self.grid[row][column] == 3:
+                    arcade.draw_rectangle_outline(x, y, WIDTH, HEIGHT, color)
                 else:
                     arcade.draw_rectangle_filled(x, y, WIDTH, HEIGHT, color)
 

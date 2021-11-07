@@ -10,8 +10,6 @@ from multiprocessing import Process
 import arcade
 
 # Set how many rows and columns we will have
-from avatar import Avatar
-from moves import Moves
 
 ROW_COUNT = 13
 COLUMN_COUNT = 22

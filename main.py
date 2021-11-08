@@ -3,18 +3,13 @@ AI COIN GRABBER GAME
 
 Authors: DA CORTE Julien, D'HARBOULLE Maxime, GOMARI
 """
-import threading
-import time
-from multiprocessing import Process
-
 import arcade
 
 # Set how many rows and columns we will have
-
 ROW_COUNT = 13
 COLUMN_COUNT = 22
 
-SCALE = 3
+SCALE = 2
 # This sets the WIDTH and HEIGHT of each grid location
 WIDTH = 35 * SCALE
 HEIGHT = 35 * SCALE
@@ -38,13 +33,13 @@ SCREEN_WIDTH = WIDTH * COLUMN_COUNT
 SCREEN_HEIGHT = HEIGHT * ROW_COUNT
 SCREEN_TITLE = "AI PAC-MAN"
 
-# 22 Column - 13 rows - [0] space - [1] coin taken - [2] Coins - [3] Wall - [4] Ghost safe-space - [5] Boost
+# 22 Column - 13 rows - [0] space - [2] Coins - [3] Wall - [4] Ghost safe-space - [5] Boost
 SIMPLE_MAZE = [
     [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
     [0, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 0],
     [0, 3, 5, 2, 2, 2, 3, 2, 2, 2, 2, 2, 2, 2, 2, 3, 2, 2, 2, 5, 3, 0],
     [0, 3, 2, 3, 3, 2, 3, 2, 3, 3, 3, 3, 3, 3, 2, 3, 2, 3, 3, 2, 3, 0],
-    [0, 3, 2, 3, 2, 2, 2, 2, 2, 2, 2, 1, 2, 2, 2, 2, 2, 2, 3, 2, 3, 0],
+    [0, 3, 2, 3, 2, 2, 2, 2, 2, 2, 2, 0, 2, 2, 2, 2, 2, 2, 3, 2, 3, 0],
     [0, 3, 2, 3, 2, 3, 3, 2, 3, 3, 3, 3, 3, 3, 2, 3, 3, 2, 3, 2, 3, 0],
     [0, 3, 2, 2, 2, 2, 2, 2, 3, 4, 4, 4, 4, 3, 2, 2, 2, 2, 2, 2, 3, 0],
     [0, 3, 2, 3, 2, 3, 3, 2, 3, 3, 4, 4, 3, 3, 2, 3, 3, 2, 3, 2, 3, 0],
@@ -148,7 +143,7 @@ class MyGame(arcade.Window):
 
         self.player_sprite = arcade.Sprite(player_image_source, PLAYER_SCALING)
         self.player_sprite.center_x = SCREEN_WIDTH / 2
-        self.player_sprite.center_y = SCREEN_HEIGHT / 2
+        self.player_sprite.center_y = SCREEN_HEIGHT / 3
         self.scene.add_sprite("Player", self.player_sprite)
 
         # Draw the grid
@@ -203,7 +198,6 @@ class MyGame(arcade.Window):
         """
         Called when the user presses a mouse button.
         """
-
         # Change the x/y screen coordinates to grid coordinates
         column = int(x // WIDTH)
         row = int(y // HEIGHT)
@@ -237,11 +231,11 @@ class MyGame(arcade.Window):
         self.physics_engine.update()
 
         coin_hit_list = arcade.check_for_collision_with_list(
-            self.player_sprite, self.scene["Coins"]
+            self.player_sprite, self.scene.get_sprite_list("Coins")
         )
 
         boost_hit_list = arcade.check_for_collision_with_list(
-            self.player_sprite, self.scene["Boosts"]
+            self.player_sprite, self.scene.get_sprite_list("Boosts")
         )
 
         if self.boost_count_up > BOOST_TIME:
@@ -271,6 +265,7 @@ class MyGame(arcade.Window):
             return False
         else:
             return True
+
 
 def main():
     window = MyGame(SCREEN_WIDTH, SCREEN_HEIGHT, SCREEN_TITLE)

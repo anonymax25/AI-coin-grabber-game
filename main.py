@@ -1,9 +1,14 @@
 """
 AI COIN GRABBER GAME
 
-Authors: DA CORTE Julien, D'HARBOULLE Maxime, GOMARI
+Authors: DA CORTE Julien, D'HARBOULLE Maxime, GOMARI Abdelillah
 """
 import arcade
+import arcade.utils
+import time
+
+#Ticks per second of the game mouvement 
+TPS = 1
 
 # Set how many rows and columns we will have
 ROW_COUNT = 13
@@ -87,14 +92,8 @@ MAZE = [
 
 
 class MyGame(arcade.Window):
-    """
-    Main application class.
-    """
 
     def __init__(self, width, height, title):
-        """
-        Set up the application.
-        """
         super().__init__(width, height, title)
         self.grid = SIMPLE_MAZE
         self.scene = None
@@ -142,18 +141,16 @@ class MyGame(arcade.Window):
         boost_image_source = "./resources/images/boost.png"
 
         self.player_sprite = arcade.Sprite(player_image_source, PLAYER_SCALING)
-        self.player_sprite.center_x = SCREEN_WIDTH / 2
-        self.player_sprite.center_y = SCREEN_HEIGHT / 3
+        self.player_sprite.center_x = 5* WIDTH + WIDTH/2 -2
+        self.player_sprite.center_y = 5* HEIGHT + HEIGHT/2 + 5
         self.scene.add_sprite("Player", self.player_sprite)
 
-        # Draw the grid
+        self.mouvements = {}
         for row in range(ROW_COUNT):
             for column in range(COLUMN_COUNT):
-                # Do the math to figure out where the box is
                 x = WIDTH * column + WIDTH // 2
                 y = HEIGHT * row + HEIGHT // 2
 
-                # Draw the box
                 if self.grid[row][column] == 2:
                     coin = arcade.Sprite(coin_image_source, COIN_SCALING)
                     coin.center_x = x
@@ -176,15 +173,20 @@ class MyGame(arcade.Window):
             self.player_sprite, self.scene.get_sprite_list("Walls")
         )
 
+        self.start_time = time.time()
+        self.ellapsed_time = 0
+        self.last_second = -1
+        self.requested_action = "none"
+        self.moving = False
+
+
     def on_draw(self):
-        # This command has to happen before we start drawing
         arcade.start_render()
 
         self.scene.draw()
 
         self.gui_camera.use()
 
-        # Draw our score on the screen, scrolling it with the viewport
         score_text = f"Score: {self.score}"
         arcade.draw_text(
             score_text,
@@ -193,41 +195,68 @@ class MyGame(arcade.Window):
             arcade.csscolor.WHITE,
             30,
         )
+        
+        arcade.draw_text(
+            str(int(self.ellapsed_time)) + "s",
+            10,
+            100,
+            arcade.csscolor.WHITE,
+            30,
+        )
 
-    def on_mouse_press(self, x, y, button, modifiers):
-        """
-        Called when the user presses a mouse button.
-        """
-        # Change the x/y screen coordinates to grid coordinates
-        column = int(x // WIDTH)
-        row = int(y // HEIGHT)
+    # def on_mouse_press(self, x, y, button, modifiers):
+    #     """
+    #     Called when the user presses a mouse button.
+    #     """
+    #     # Change the x/y screen coordinates to grid coordinates
+    #     column = int(x // WIDTH)
+    #     row = int(y // HEIGHT)
 
-        print(f"Click coordinates: ({x}, {y}). Grid coordinates: ({row}, {column})")
+    #     print(f"Click coordinates: ({x}, {y}). Grid coordinates: ({row}, {column})")
 
     def on_key_press(self, key, modifiers):
-        """Called whenever a key is pressed. """
-        if key == arcade.key.UP or key == arcade.key.W:
-            self.player_sprite.change_y = self.normal_speed
-        elif key == arcade.key.DOWN or key == arcade.key.S:
-            self.player_sprite.change_y = -self.normal_speed
-        elif key == arcade.key.LEFT or key == arcade.key.A:
-            self.player_sprite.change_x = -self.normal_speed
-        elif key == arcade.key.RIGHT or key == arcade.key.D:
-            self.player_sprite.change_x = self.normal_speed
-
-    def on_key_release(self, key, modifiers):
-        """Called when the user releases a key. """
         if key == arcade.key.UP or key == arcade.key.Z:
-            self.player_sprite.change_y = 0
-        elif key == arcade.key.DOWN or key == arcade.key.S:
-            self.player_sprite.change_y = 0
-        elif key == arcade.key.LEFT or key == arcade.key.Q:
-            self.player_sprite.change_x = 0
-        elif key == arcade.key.RIGHT or key == arcade.key.D:
-            self.player_sprite.change_x = 0
+            self.requested_action = "up"
+        if key == arcade.key.DOWN or key == arcade.key.S:
+            self.requested_action = "down"
+        if key == arcade.key.LEFT or key == arcade.key.Q:
+            self.requested_action = "left"
+        if key == arcade.key.RIGHT or key == arcade.key.D:
+            self.requested_action = "right"
+    
+    def on_key_release(self, key, modifiers):
+        self.requested_action = "none"
+
+    def move(self, x, y):
+        self.player_sprite.center_y = y  
+        self.player_sprite.center_x = x  
+
+    def apply_action(self):
+        if self.action != "none":
+            self.moving = True
+            print(self.action)
+        if self.action == "up":
+            self.move(self.player_sprite.center_x, self.player_sprite.center_y + HEIGHT)
+        elif self.action == "down":
+            self.move(self.player_sprite.center_x, self.player_sprite.center_y - HEIGHT)
+        elif self.action == "left":
+            self.move(self.player_sprite.center_x - WIDTH, self.player_sprite.center_y)
+        elif self.action == "right":
+            self.move(self.player_sprite.center_x + WIDTH, self.player_sprite.center_y)
+
+    
+
+
 
     def on_update(self, delta_time):
-        """ Movement and game logic """
+        self.ellapsed_time = time.time() - self.start_time
+        self.action = self.requested_action
+        if(self.last_second < int(self.ellapsed_time // 1)):
+            self.last_second = int(self.ellapsed_time // 1)
+            self.apply_action()
+            self.action = "none"
+
+
         self.physics_engine.update()
 
         coin_hit_list = arcade.check_for_collision_with_list(
@@ -258,7 +287,6 @@ class MyGame(arcade.Window):
             self.activate_boost = True
 
     def nothing_else_pressed(self):
-        """Called when the user releases a key. """
         print(f"nothing pressed: {self.left_pressed + self.right_pressed + self.up_pressed + self.down_pressed}")
 
         if self.left_pressed + self.right_pressed + self.up_pressed + self.down_pressed == 1:

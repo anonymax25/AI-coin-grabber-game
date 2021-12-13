@@ -42,7 +42,7 @@ SIMPLE_MAZE = [
     [0, 3, 2, 3, 3, 2, 3, 2, 3, 3, 3, 3, 3, 3, 2, 3, 2, 3, 3, 2, 3, 0],
     [0, 3, 2, 3, 2, 2, 2, 2, 2, 2, 2, 0, 2, 2, 2, 2, 2, 2, 3, 2, 3, 0],
     [0, 3, 2, 3, 2, 3, 3, 2, 3, 3, 3, 3, 3, 3, 2, 3, 3, 2, 3, 2, 3, 0],
-    [0, 3, 2, 2, 2, 2, 2, 2, 3, 4, 4, 4, 4, 3, 2, 2, 2, 2, 2, 2, 3, 0],
+    [0, 3, 6, 2, 2, 2, 2, 2, 3, 4, 4, 4, 4, 3, 2, 2, 2, 2, 2, 2, 3, 0],
     [0, 3, 2, 3, 2, 3, 3, 2, 3, 3, 4, 4, 3, 3, 2, 3, 3, 2, 3, 2, 3, 0],
     [0, 3, 2, 3, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 3, 2, 3, 0],
     [0, 3, 2, 3, 3, 2, 3, 2, 3, 3, 3, 3, 3, 3, 2, 3, 2, 3, 3, 2, 3, 0],
@@ -113,6 +113,7 @@ class MyGame(arcade.Window):
         self.scene = arcade.Scene()
 
         self.scene.add_sprite_list("Player")
+        self.scene.add_sprite_list("Ghosts")
         self.scene.add_sprite_list("Walls", use_spatial_hash=True)
         self.scene.add_sprite_list("Coins", use_spatial_hash=True)
         self.scene.add_sprite_list("Boosts", use_spatial_hash=True)
@@ -122,10 +123,7 @@ class MyGame(arcade.Window):
         player_image_source = "./resources/images/player.png"
         boost_image_source = "./resources/images/boost.png"
 
-        self.player_sprite = arcade.Sprite(player_image_source, PLAYER_SCALING)
-        self.player_sprite.center_x = 5* WIDTH + WIDTH/2 - 2
-        self.player_sprite.center_y = 6* HEIGHT + HEIGHT/2
-        self.scene.add_sprite("Player", self.player_sprite)
+        
 
         self.mouvement_queue = []
 
@@ -144,6 +142,13 @@ class MyGame(arcade.Window):
                     boost.center_x = x
                     boost.center_y = y
                     self.scene.add_sprite("Boosts", boost)
+                elif self.grid[row][column] == 6:
+                    if(self.player_sprite):
+                        continue
+                    self.player_sprite = arcade.Sprite(player_image_source, PLAYER_SCALING)
+                    self.player_sprite.center_x = x #5* WIDTH + WIDTH/2 - 2
+                    self.player_sprite.center_y = y #6* HEIGHT + HEIGHT/2
+                    self.scene.add_sprite("Player", self.player_sprite)
                 elif self.grid[row][column] == 3:
                     wall = arcade.Sprite(wall_image_source, WALL_SCALING)
                     wall.center_x = x

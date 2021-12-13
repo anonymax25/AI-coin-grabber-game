@@ -11,6 +11,7 @@ import time
 TPS = 2
 BOOST_TPS_SCALE = 2
 BOOST_TIME = 4
+ANIMATION_DETAIL_LEVEL = 10
 
 # Set how many rows and columns we will have
 ROW_COUNT = 13
@@ -161,7 +162,9 @@ class MyGame(arcade.Window):
         self.ellapsed_time = 0
         self.last_action = 0
         self.requested_action = "none"
-        self.moving = False
+        self.player_sprite.is_moving= False
+        self.player_sprite.moving_to_x = 0
+        self.player_sprite.moving_to_y = 0
 
 
     def on_draw(self):
@@ -212,26 +215,40 @@ class MyGame(arcade.Window):
         for wall in self.scene.get_sprite_list("Walls"):
             if(wall.collides_with_point((x,y))):
                 return
-        self.player_sprite.center_y = y  
-        self.player_sprite.center_x = x  
+        self.player_sprite.moving_to_x = x
+        self.player_sprite.moving_to_y = y
+        
+        # ease in mouvement
+        self.player_sprite.center_x = self.player_sprite.center_x - ((self.player_sprite.center_x - x) / ANIMATION_DETAIL_LEVEL * TPS * (BOOST_TPS_SCALE if self.activate_boost else 1))
+        self.player_sprite.center_y = self.player_sprite.center_y - ((self.player_sprite.center_y - y) / ANIMATION_DETAIL_LEVEL * TPS * (BOOST_TPS_SCALE if self.activate_boost else 1)) 
+        
+        if abs(self.player_sprite.center_y - y) < 1 and abs(self.player_sprite.center_x - x) < 1:
+            self.player_sprite.center_x = x
+            self.player_sprite.center_y = y
+            self.player_sprite.is_moving= False        
 
     def apply_action(self):
         if self.action != "none":
-            self.moving = True
             print(self.action)
         if self.action == "up":
+            self.player_sprite.is_moving= True
             self.move(self.player_sprite.center_x, self.player_sprite.center_y + HEIGHT)
         elif self.action == "down":
+            self.player_sprite.is_moving= True
             self.move(self.player_sprite.center_x, self.player_sprite.center_y - HEIGHT)
         elif self.action == "left":
+            self.player_sprite.is_moving= True
             self.move(self.player_sprite.center_x - WIDTH, self.player_sprite.center_y)
         elif self.action == "right":
+            self.player_sprite.is_moving= True
             self.move(self.player_sprite.center_x + WIDTH, self.player_sprite.center_y)
 
     def on_update(self, delta_time):
         self.ellapsed_time = time.time() - self.start_time
         self.action = self.mouvement_queue[0] if len(self.mouvement_queue) > 0 else "none"
-        if(self.ellapsed_time > self.last_action + 1 / (TPS * (BOOST_TPS_SCALE if self.activate_boost else 1))):
+        if self.player_sprite.is_moving:
+            self.move(self.player_sprite.moving_to_x, self.player_sprite.moving_to_y)
+        elif(self.ellapsed_time > self.last_action + 1 / (TPS * (BOOST_TPS_SCALE if self.activate_boost else 1))):
             self.last_action = self.ellapsed_time
             self.apply_action()
             self.action = "none"

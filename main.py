@@ -8,13 +8,15 @@ import arcade.utils
 import time
 
 #Ticks per second of the game mouvement 
-TPS = 1
+TPS = 2
+BOOST_TPS_SCALE = 2
+BOOST_TIME = 4
 
 # Set how many rows and columns we will have
 ROW_COUNT = 13
 COLUMN_COUNT = 22
 
-SCALE = 2
+SCALE = 1
 # This sets the WIDTH and HEIGHT of each grid location
 WIDTH = 35 * SCALE
 HEIGHT = 35 * SCALE
@@ -26,12 +28,6 @@ PLAYER_SCALING = 0.9 * SCALE
 
 CHARACTER_SCALING = 1 * SCALE
 TILE_SCALING = 0.5
-
-# Movement speed of player, in pixels per frame
-PLAYER_MOVEMENT_SPEED = 5
-BOOST_PLAYER_MOVEMENT_SPEED = PLAYER_MOVEMENT_SPEED * 2
-
-BOOST_TIME = 2
 
 # Do the math to figure out our screen dimensions
 SCREEN_WIDTH = WIDTH * COLUMN_COUNT
@@ -104,8 +100,6 @@ class MyGame(arcade.Window):
         self.up_pressed: bool = False
         self.down_pressed: bool = False
 
-        self.normal_speed = PLAYER_MOVEMENT_SPEED
-
         self.boost_count_up = 0
 
         self.activate_boost = False
@@ -142,7 +136,7 @@ class MyGame(arcade.Window):
 
         self.player_sprite = arcade.Sprite(player_image_source, PLAYER_SCALING)
         self.player_sprite.center_x = 5* WIDTH + WIDTH/2 -2
-        self.player_sprite.center_y = 5* HEIGHT + HEIGHT/2 + 5
+        self.player_sprite.center_y = 6* HEIGHT + HEIGHT/2 + 5
         self.scene.add_sprite("Player", self.player_sprite)
 
         self.mouvements = {}
@@ -169,13 +163,13 @@ class MyGame(arcade.Window):
                 else:
                     arcade.draw_rectangle_filled(x, y, WIDTH, HEIGHT, arcade.color.BLACK)
 
-        self.physics_engine = arcade.PhysicsEngineSimple(
-            self.player_sprite, self.scene.get_sprite_list("Walls")
-        )
+        # self.physics_engine = arcade.PhysicsEngineSimple(
+        #     self.player_sprite, self.scene.get_sprite_list("Walls")
+        # )
 
         self.start_time = time.time()
         self.ellapsed_time = 0
-        self.last_second = -1
+        self.last_action = 0
         self.requested_action = "none"
         self.moving = False
 
@@ -193,26 +187,16 @@ class MyGame(arcade.Window):
             10,
             10,
             arcade.csscolor.WHITE,
-            30,
+            20,
         )
         
         arcade.draw_text(
             str(int(self.ellapsed_time)) + "s",
+            200,
             10,
-            100,
             arcade.csscolor.WHITE,
-            30,
+            20,
         )
-
-    # def on_mouse_press(self, x, y, button, modifiers):
-    #     """
-    #     Called when the user presses a mouse button.
-    #     """
-    #     # Change the x/y screen coordinates to grid coordinates
-    #     column = int(x // WIDTH)
-    #     row = int(y // HEIGHT)
-
-    #     print(f"Click coordinates: ({x}, {y}). Grid coordinates: ({row}, {column})")
 
     def on_key_press(self, key, modifiers):
         if key == arcade.key.UP or key == arcade.key.Z:
@@ -228,6 +212,9 @@ class MyGame(arcade.Window):
         self.requested_action = "none"
 
     def move(self, x, y):
+        for wall in self.scene.get_sprite_list("Walls"):
+            if(wall.collides_with_point((x,y))):
+                return
         self.player_sprite.center_y = y  
         self.player_sprite.center_x = x  
 
@@ -244,20 +231,13 @@ class MyGame(arcade.Window):
         elif self.action == "right":
             self.move(self.player_sprite.center_x + WIDTH, self.player_sprite.center_y)
 
-    
-
-
-
     def on_update(self, delta_time):
         self.ellapsed_time = time.time() - self.start_time
         self.action = self.requested_action
-        if(self.last_second < int(self.ellapsed_time // 1)):
-            self.last_second = int(self.ellapsed_time // 1)
+        if(self.ellapsed_time > self.last_action + 1 / (TPS * (BOOST_TPS_SCALE if self.activate_boost else 1))):
+            self.last_action = self.ellapsed_time
             self.apply_action()
             self.action = "none"
-
-
-        self.physics_engine.update()
 
         coin_hit_list = arcade.check_for_collision_with_list(
             self.player_sprite, self.scene.get_sprite_list("Coins")
@@ -268,9 +248,8 @@ class MyGame(arcade.Window):
         )
 
         if self.boost_count_up > BOOST_TIME:
-            self.normal_speed = PLAYER_MOVEMENT_SPEED
             self.activate_boost = False
-            self.boost_count_up = 0
+            
 
         if self.activate_boost:
             self.boost_count_up += delta_time
@@ -283,8 +262,8 @@ class MyGame(arcade.Window):
         for boost in boost_hit_list:
             boost.remove_from_sprite_lists()
             arcade.play_sound(self.collect_boost_sound)
-            self.normal_speed = BOOST_PLAYER_MOVEMENT_SPEED
             self.activate_boost = True
+            self.boost_count_up = 0
 
     def nothing_else_pressed(self):
         print(f"nothing pressed: {self.left_pressed + self.right_pressed + self.up_pressed + self.down_pressed}")

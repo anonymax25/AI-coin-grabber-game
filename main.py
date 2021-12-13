@@ -94,22 +94,10 @@ class MyGame(arcade.Window):
         self.grid = SIMPLE_MAZE
         self.scene = None
         self.player_sprite = None
-
-        self.left_pressed: bool = False
-        self.right_pressed: bool = False
-        self.up_pressed: bool = False
-        self.down_pressed: bool = False
-
         self.boost_count_up = 0
-
         self.activate_boost = False
-
         self.player_list = None
-
-        self.physics_engine = None
-
         self.gui_camera = None
-
         self.score = 0
 
         self.collect_coin_sound = arcade.load_sound("./resources/sounds/coin-sound.wav")
@@ -135,11 +123,12 @@ class MyGame(arcade.Window):
         boost_image_source = "./resources/images/boost.png"
 
         self.player_sprite = arcade.Sprite(player_image_source, PLAYER_SCALING)
-        self.player_sprite.center_x = 5* WIDTH + WIDTH/2 -2
-        self.player_sprite.center_y = 6* HEIGHT + HEIGHT/2 + 5
+        self.player_sprite.center_x = 5* WIDTH + WIDTH/2 - 2
+        self.player_sprite.center_y = 6* HEIGHT + HEIGHT/2
         self.scene.add_sprite("Player", self.player_sprite)
 
-        self.mouvements = {}
+        self.mouvement_queue = []
+
         for row in range(ROW_COUNT):
             for column in range(COLUMN_COUNT):
                 x = WIDTH * column + WIDTH // 2
@@ -162,10 +151,6 @@ class MyGame(arcade.Window):
                     self.scene.add_sprite("Walls", wall)
                 else:
                     arcade.draw_rectangle_filled(x, y, WIDTH, HEIGHT, arcade.color.BLACK)
-
-        # self.physics_engine = arcade.PhysicsEngineSimple(
-        #     self.player_sprite, self.scene.get_sprite_list("Walls")
-        # )
 
         self.start_time = time.time()
         self.ellapsed_time = 0
@@ -192,7 +177,7 @@ class MyGame(arcade.Window):
         
         arcade.draw_text(
             str(int(self.ellapsed_time)) + "s",
-            200,
+            SCREEN_WIDTH-100,
             10,
             arcade.csscolor.WHITE,
             20,
@@ -200,16 +185,23 @@ class MyGame(arcade.Window):
 
     def on_key_press(self, key, modifiers):
         if key == arcade.key.UP or key == arcade.key.Z:
-            self.requested_action = "up"
+            self.mouvement_queue.insert(0, "up")
         if key == arcade.key.DOWN or key == arcade.key.S:
-            self.requested_action = "down"
+            self.mouvement_queue.insert(0, "down")
         if key == arcade.key.LEFT or key == arcade.key.Q:
-            self.requested_action = "left"
+            self.mouvement_queue.insert(0, "left")
         if key == arcade.key.RIGHT or key == arcade.key.D:
-            self.requested_action = "right"
+            self.mouvement_queue.insert(0, "right")
     
     def on_key_release(self, key, modifiers):
-        self.requested_action = "none"
+        if key == arcade.key.UP or key == arcade.key.Z:
+            self.mouvement_queue = [a for a in self.mouvement_queue if a != "up"]
+        if key == arcade.key.DOWN or key == arcade.key.S:
+            self.mouvement_queue = [a for a in self.mouvement_queue if a != "down"]
+        if key == arcade.key.LEFT or key == arcade.key.Q:
+            self.mouvement_queue = [a for a in self.mouvement_queue if a != "left"]
+        if key == arcade.key.RIGHT or key == arcade.key.D:
+            self.mouvement_queue = [a for a in self.mouvement_queue if a != "right"]
 
     def move(self, x, y):
         for wall in self.scene.get_sprite_list("Walls"):
@@ -233,7 +225,7 @@ class MyGame(arcade.Window):
 
     def on_update(self, delta_time):
         self.ellapsed_time = time.time() - self.start_time
-        self.action = self.requested_action
+        self.action = self.mouvement_queue[0] if len(self.mouvement_queue) > 0 else "none"
         if(self.ellapsed_time > self.last_action + 1 / (TPS * (BOOST_TPS_SCALE if self.activate_boost else 1))):
             self.last_action = self.ellapsed_time
             self.apply_action()
@@ -264,14 +256,6 @@ class MyGame(arcade.Window):
             arcade.play_sound(self.collect_boost_sound)
             self.activate_boost = True
             self.boost_count_up = 0
-
-    def nothing_else_pressed(self):
-        print(f"nothing pressed: {self.left_pressed + self.right_pressed + self.up_pressed + self.down_pressed}")
-
-        if self.left_pressed + self.right_pressed + self.up_pressed + self.down_pressed == 1:
-            return False
-        else:
-            return True
 
 
 def main():

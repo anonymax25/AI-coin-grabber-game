@@ -8,6 +8,8 @@ import arcade.utils
 import time
 
 #Ticks per second of the game mouvement 
+IS_DEBUG = False
+
 TPS = 2
 BOOST_TPS_SCALE = 2
 BOOST_TIME = 4
@@ -228,7 +230,7 @@ class MyGame(arcade.Window):
             self.player_sprite.is_moving= False        
 
     def apply_action(self):
-        if self.action != "none":
+        if self.action != "none" and IS_DEBUG:
             print(self.action)
         if self.action == "up":
             self.player_sprite.is_moving= True

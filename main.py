@@ -4,13 +4,30 @@ AI COIN GRABBER GAME
 Authors: DA CORTE Julien, D'HARBOULLE Maxime, GOMARI Abdelillah
 """
 import arcade
+from arcade.sound import play_sound
 import arcade.utils
 import time
+import collections
 
-#Ticks per second of the game mouvement 
+class Queue:
+    def __init__(self):
+        self.elements = collections.deque()
+    
+    def empty(self):
+        return not self.elements
+    
+    def put(self, x):
+        self.elements.append(x)
+    
+    def get(self):
+        return self.elements.popleft()
+
+
+# show some more logs
 IS_DEBUG = False
 
-TPS = 2
+#Ticks per second of the game mouvement 
+TPS = 3
 BOOST_TPS_SCALE = 2
 BOOST_TIME = 4
 ANIMATION_DETAIL_LEVEL = 10
@@ -19,7 +36,7 @@ ANIMATION_DETAIL_LEVEL = 10
 ROW_COUNT = 13
 COLUMN_COUNT = 22
 
-SCALE = 1
+SCALE = 2
 # This sets the WIDTH and HEIGHT of each grid location
 WIDTH = 35 * SCALE
 HEIGHT = 35 * SCALE
@@ -46,7 +63,7 @@ SIMPLE_MAZE = [
     [0, 3, 2, 3, 2, 2, 2, 2, 2, 2, 2, 0, 2, 2, 2, 2, 2, 2, 3, 2, 3, 0],
     [0, 3, 2, 3, 2, 3, 3, 2, 3, 3, 3, 3, 3, 3, 2, 3, 3, 2, 3, 2, 3, 0],
     [0, 3, 6, 2, 2, 2, 2, 2, 3, 4, 4, 4, 4, 3, 2, 2, 2, 2, 2, 2, 3, 0],
-    [0, 3, 2, 3, 2, 3, 3, 2, 3, 3, 4, 4, 3, 3, 2, 3, 3, 2, 3, 2, 3, 0],
+    [0, 3, 2, 3, 2, 3, 3, 2, 3, 3, 7, 4, 3, 3, 2, 3, 3, 2, 3, 2, 3, 0],
     [0, 3, 2, 3, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 3, 2, 3, 0],
     [0, 3, 2, 3, 3, 2, 3, 2, 3, 3, 3, 3, 3, 3, 2, 3, 2, 3, 3, 2, 3, 0],
     [0, 3, 5, 2, 2, 2, 3, 2, 2, 2, 2, 2, 2, 2, 2, 3, 2, 2, 2, 5, 3, 0],
@@ -128,8 +145,6 @@ class MyGame(arcade.Window):
 
         
 
-        self.mouvement_queue = []
-
         for row in range(ROW_COUNT):
             for column in range(COLUMN_COUNT):
                 x = WIDTH * column + WIDTH // 2
@@ -149,9 +164,27 @@ class MyGame(arcade.Window):
                     if(self.player_sprite):
                         continue
                     self.player_sprite = arcade.Sprite(player_image_source, PLAYER_SCALING)
-                    self.player_sprite.center_x = x #5* WIDTH + WIDTH/2 - 2
-                    self.player_sprite.center_y = y #6* HEIGHT + HEIGHT/2
+                    self.player_sprite.center_x = x
+                    self.player_sprite.center_y = y
+                    self.player_sprite.is_moving = False
+                    self.player_sprite.moving_to_x = 0
+                    self.player_sprite.moving_to_y = 0
+                    self.player_sprite.action = "none"
+                    self.player_sprite.mouvement_queue = []
                     self.scene.add_sprite("Player", self.player_sprite)
+                elif self.grid[row][column] == 7:
+                    self.ghost_sprite = arcade.Sprite(":resources:images/animated_characters/zombie/zombie_idle.png", PLAYER_SCALING/3)
+                    self.ghost_sprite.center_x = x
+                    self.ghost_sprite.center_y = y
+                    self.ghost_sprite.grid = [ [0] * (COLUMN_COUNT-2) for _ in range((ROW_COUNT-2))]
+                    self.ghost_sprite.known_cells = [ [False] * (COLUMN_COUNT-2) for _ in range((ROW_COUNT-2))]
+                    self.ghost_sprite.x = column
+                    self.ghost_sprite.y = row
+                    self.ghost_sprite.known_cells[row][column] = True
+                    self.ghost_sprite.is_moving = False
+                    self.ghost_sprite.moving_to_x = 0
+                    self.ghost_sprite.moving_to_y = 0
+                    self.scene.add_sprite("Ghost", self.ghost_sprite)
                 elif self.grid[row][column] == 3:
                     wall = arcade.Sprite(wall_image_source, WALL_SCALING)
                     wall.center_x = x
@@ -164,9 +197,13 @@ class MyGame(arcade.Window):
         self.ellapsed_time = 0
         self.last_action = 0
         self.requested_action = "none"
-        self.player_sprite.is_moving= False
-        self.player_sprite.moving_to_x = 0
-        self.player_sprite.moving_to_y = 0
+        
+
+        print(self.ghost_sprite.grid)
+        print(self.ghost_sprite.known_cells)
+        print(self.ghost_sprite.x)
+        print(self.ghost_sprite.y)
+
 
 
     def on_draw(self):
@@ -193,67 +230,94 @@ class MyGame(arcade.Window):
             20,
         )
 
+        # arcade.draw_circle_outline(self.ghost_sprite.center_x, self.ghost_sprite.center_y, 20, arcade.color.GREEN)
+
     def on_key_press(self, key, modifiers):
         if key == arcade.key.UP or key == arcade.key.Z:
-            self.mouvement_queue.insert(0, "up")
+            self.player_sprite.mouvement_queue.insert(0, "up")
         if key == arcade.key.DOWN or key == arcade.key.S:
-            self.mouvement_queue.insert(0, "down")
+            self.player_sprite.mouvement_queue.insert(0, "down")
         if key == arcade.key.LEFT or key == arcade.key.Q:
-            self.mouvement_queue.insert(0, "left")
+            self.player_sprite.mouvement_queue.insert(0, "left")
         if key == arcade.key.RIGHT or key == arcade.key.D:
-            self.mouvement_queue.insert(0, "right")
+            self.player_sprite.mouvement_queue.insert(0, "right")
     
     def on_key_release(self, key, modifiers):
         if key == arcade.key.UP or key == arcade.key.Z:
-            self.mouvement_queue = [a for a in self.mouvement_queue if a != "up"]
+            self.player_sprite.mouvement_queue = [a for a in self.player_sprite.mouvement_queue if a != "up"]
         if key == arcade.key.DOWN or key == arcade.key.S:
-            self.mouvement_queue = [a for a in self.mouvement_queue if a != "down"]
+            self.player_sprite.mouvement_queue = [a for a in self.player_sprite.mouvement_queue if a != "down"]
         if key == arcade.key.LEFT or key == arcade.key.Q:
-            self.mouvement_queue = [a for a in self.mouvement_queue if a != "left"]
+            self.player_sprite.mouvement_queue = [a for a in self.player_sprite.mouvement_queue if a != "left"]
         if key == arcade.key.RIGHT or key == arcade.key.D:
-            self.mouvement_queue = [a for a in self.mouvement_queue if a != "right"]
+            self.player_sprite.mouvement_queue = [a for a in self.player_sprite.mouvement_queue if a != "right"]
 
-    def move(self, x, y):
+    def move(self, x, y, sprite):
         for wall in self.scene.get_sprite_list("Walls"):
             if(wall.collides_with_point((x,y))):
                 return
-        self.player_sprite.moving_to_x = x
-        self.player_sprite.moving_to_y = y
+        sprite.moving_to_x = x
+        sprite.moving_to_y = y
         
         # ease in mouvement
-        self.player_sprite.center_x = self.player_sprite.center_x - ((self.player_sprite.center_x - x) / ANIMATION_DETAIL_LEVEL * TPS * (BOOST_TPS_SCALE if self.activate_boost else 1))
-        self.player_sprite.center_y = self.player_sprite.center_y - ((self.player_sprite.center_y - y) / ANIMATION_DETAIL_LEVEL * TPS * (BOOST_TPS_SCALE if self.activate_boost else 1)) 
+        sprite.center_x = sprite.center_x - ((sprite.center_x - x) / ANIMATION_DETAIL_LEVEL * TPS * (BOOST_TPS_SCALE if self.activate_boost else 1))
+        sprite.center_y = sprite.center_y - ((sprite.center_y - y) / ANIMATION_DETAIL_LEVEL * TPS * (BOOST_TPS_SCALE if self.activate_boost else 1)) 
         
-        if abs(self.player_sprite.center_y - y) < 1 and abs(self.player_sprite.center_x - x) < 1:
-            self.player_sprite.center_x = x
-            self.player_sprite.center_y = y
-            self.player_sprite.is_moving= False        
+        if abs(sprite.center_y - y) < 1 and abs(sprite.center_x - x) < 1:
+            sprite.center_x = x
+            sprite.center_y = y
+            sprite.is_moving = False        
 
-    def apply_action(self):
-        if self.action != "none" and IS_DEBUG:
-            print(self.action)
-        if self.action == "up":
-            self.player_sprite.is_moving= True
-            self.move(self.player_sprite.center_x, self.player_sprite.center_y + HEIGHT)
-        elif self.action == "down":
-            self.player_sprite.is_moving= True
-            self.move(self.player_sprite.center_x, self.player_sprite.center_y - HEIGHT)
-        elif self.action == "left":
-            self.player_sprite.is_moving= True
-            self.move(self.player_sprite.center_x - WIDTH, self.player_sprite.center_y)
-        elif self.action == "right":
-            self.player_sprite.is_moving= True
-            self.move(self.player_sprite.center_x + WIDTH, self.player_sprite.center_y)
+    def apply_action(self, sprite, action):
+        if action != "none" and IS_DEBUG:
+            print(action)
+        if action == "up":
+            sprite.is_moving = True
+            self.move(sprite.center_x, sprite.center_y + HEIGHT, sprite)
+        elif action == "down":
+            sprite.is_moving = True
+            self.move(sprite.center_x, sprite.center_y - HEIGHT, sprite)
+        elif action == "left":
+            sprite.is_moving = True
+            self.move(sprite.center_x - WIDTH, sprite.center_y, sprite)
+        elif action == "right":
+            sprite.is_moving = True
+            self.move(sprite.center_x + WIDTH, sprite.center_y, sprite)
+    
+    def play_ghost_turn(self, sprite):
+        action = self.ghost_best_action(sprite)
+        if action == "up":
+            sprite.x = sprite.y + 1 
+        elif action == "down":
+            sprite.x = sprite.y - 1 
+        elif action == "left":
+            sprite.x = sprite.x - 1 
+        elif action == "right":
+            sprite.x = sprite.x + 1 
+        self.apply_action(sprite, action)
+        sprite.known_cells[sprite.y][sprite.x] = True
+
+    def ghost_best_action(self, sprite):
+        return "up"
 
     def on_update(self, delta_time):
         self.ellapsed_time = time.time() - self.start_time
-        self.action = self.mouvement_queue[0] if len(self.mouvement_queue) > 0 else "none"
+        self.player_sprite.action = self.player_sprite.mouvement_queue[0] if len(self.player_sprite.mouvement_queue) > 0 else "none"
+        
         if self.player_sprite.is_moving:
-            self.move(self.player_sprite.moving_to_x, self.player_sprite.moving_to_y)
-        elif(self.ellapsed_time > self.last_action + 1 / (TPS * (BOOST_TPS_SCALE if self.activate_boost else 1))):
+            self.move(self.player_sprite.moving_to_x, self.player_sprite.moving_to_y, self.player_sprite)
+        if self.ghost_sprite.is_moving:
+                    self.move(self.ghost_sprite.moving_to_x, self.ghost_sprite.moving_to_y, self.ghost_sprite)
+
+        if(self.ellapsed_time > self.last_action + 1 / (TPS * (BOOST_TPS_SCALE if self.activate_boost else 1))):
             self.last_action = self.ellapsed_time
-            self.apply_action()
-            self.action = "none"
+           
+            if not self.player_sprite.is_moving:
+                self.apply_action(self.player_sprite, self.player_sprite.action)
+                self.player_sprite.action = "none"
+            self.play_ghost_turn(self.ghost_sprite)
+            
+
 
         coin_hit_list = arcade.check_for_collision_with_list(
             self.player_sprite, self.scene.get_sprite_list("Coins")
@@ -266,7 +330,6 @@ class MyGame(arcade.Window):
         if self.boost_count_up > BOOST_TIME:
             self.activate_boost = False
             
-
         if self.activate_boost:
             self.boost_count_up += delta_time
 
@@ -290,3 +353,5 @@ def main():
 
 if __name__ == "__main__":
     main()
+
+

@@ -171,7 +171,7 @@ class MyGame(arcade.Window):
 
         self.gui_camera.use()
 
-        score_text = f"Score: {self.score}"
+        score_text = f"Coins: {self.score}"
         arcade.draw_text(
             score_text,
             10,

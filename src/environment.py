@@ -4,7 +4,7 @@ LEFT = 'L'
 RIGHT = 'R'
 
 # Set rewards
-REWARD_BORDER = -10
+REWARD_BORDER = -100
 REWARD_EMPTY = -2
 REWARD_GOAL = 10
 REWARD_COIN = 5
@@ -46,10 +46,11 @@ class Environment:
             new_state = (state[0], state[1] + 1)
 
         # Calculer la récompense pour l'agent et la lui transmettre
+        print(self.__states[new_state])
         if new_state in self.__states:
             if self.__states[new_state] == 3:
                 reward = REWARD_BORDER
-            elif self.__states[new_state] == 2:
+            elif self.__states[new_state] in [2, 4]:
                 reward = REWARD_COIN
                 self.__states[new_state] = 0
             else:

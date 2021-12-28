@@ -40,7 +40,6 @@ class Agent:
                                                                        maxQ - self.__qtable[self.__state][action])
 
         self.__state = state
-        self.__score += reward
         self.__last_action = action
 
     def best_action(self):

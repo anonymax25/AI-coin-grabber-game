@@ -1,5 +1,4 @@
 from random import *
-import pickle
 
 UP = 'U'
 DOWN = 'D'
@@ -14,24 +13,28 @@ class Agent:
         self.__qtable = {}
         self.__learning_rate = 1
         self.__discount_factor = 1
+        self.__last_action = None
+        self.__state = environment.start
         for s in environment.states:
             self.__qtable[s] = {}
             for a in ACTIONS:
                 self.__qtable[s][a] = random() * 10.0
-        self.reset()
 
-    def save(self, filename):
-        with open(filename, 'wb') as file:
-            pickle.dump(self.__qtable, file)
+    @property
+    def state(self):
+        return self.__state
 
-    def load(self, filename):
-        with open(filename, 'rb') as file:
-            self.__qtable = pickle.load(file)
+    @property
+    def last_action(self):
+        return self.__last_action
 
-    def reset(self):
-        self.__state = self.__environment.start
-        self.__score = 0
-        self.__last_action = None
+    @property
+    def qtable(self):
+        return self.__qtable
+
+    @property
+    def environment(self):
+        return self.__environment
 
     def update(self, action, state, reward):
         # update q-table
@@ -53,18 +56,10 @@ class Agent:
     def do(self, action):
         self.__environment.apply(self, action)
 
-    @property
-    def state(self):
-        return self.__state
+    # def save(self, filename):
+    #     with open(filename, 'wb') as file:
+    #         pickle.dump(self.__qtable, file)
 
-    @property
-    def score(self):
-        return self.__score
-
-    @property
-    def qtable(self):
-        return self.__qtable
-
-    @property
-    def environment(self):
-        return self.__environment
+    # def load(self, filename):
+    #     with open(filename, 'rb') as file:
+    #         self.__qtable = pickle.load(file)

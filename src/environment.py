@@ -69,8 +69,6 @@ class Environment:
             new_state = (state[0], state[1] - 1)
         elif action == RIGHT:
             new_state = (state[0], state[1] + 1)
-        else:
-            new_state = state
 
         if new_state in self.__states:
             if self.__states[new_state] == 3:

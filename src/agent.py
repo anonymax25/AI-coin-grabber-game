@@ -13,8 +13,11 @@ class Agent:
         self.__qtable = {}
         self.__learning_rate = 1
         self.__discount_factor = 1
+        self.__actions = 0
         self.__last_action = None
-        self.__state = environment.start
+        self.__score = 0
+        self.__coins = 0
+        self.__state = environment.player_start
         for s in environment.states:
             self.__qtable[s] = {}
             for a in ACTIONS:
@@ -25,8 +28,16 @@ class Agent:
         return self.__state
 
     @property
-    def last_action(self):
-        return self.__last_action
+    def actions(self):
+        return self.__actions
+
+    @property
+    def score(self):
+        return self.__score
+
+    @property
+    def coins(self):
+        return self.__coins
 
     @property
     def qtable(self):
@@ -36,6 +47,9 @@ class Agent:
     def environment(self):
         return self.__environment
 
+    def add_coin(self, coin):
+        self.__coins += coin
+
     def update(self, action, state, reward):
         # update q-table
         maxQ = max(self.__qtable[state].values())
@@ -44,6 +58,8 @@ class Agent:
 
         self.__state = state
         self.__last_action = action
+        self.__actions += 1
+        self.__score += reward
 
     def best_action(self):
         rewards = self.__qtable[self.__state]
@@ -55,6 +71,14 @@ class Agent:
 
     def do(self, action):
         self.__environment.apply(self, action)
+
+    def reset(self):
+        self.__state = self.__environment.player_start
+        self.__actions = 0
+        self.__last_action = None
+        self.__score = 0
+        self.__coins = 0
+        self.environment.start()
 
     # def save(self, filename):
     #     with open(filename, 'wb') as file:

@@ -11,8 +11,6 @@ class Game(arcade.Window):
         self.__environment = agent.environment
         self.__iteration = 1
         self.player = None
-        self.score = 0
-        self.boost_count_up = 0
         self.scene = arcade.Scene()
         self.scene.add_sprite_list("Player")
         self.scene.add_sprite_list("Walls")
@@ -57,14 +55,24 @@ class Game(arcade.Window):
 
     def on_draw(self):
         arcade.start_render()
+        score_text = f"Score: {self.__agent.score}"
+        coins_text = f"Nombres de gèmes: {self.__agent.coins}"
+        move_text = f"Movements: {self.__agent.actions}"
+        iteration_text = f"Nombres d'iterations: {self.__iteration}"
+
         self.scene.draw()
-        score_text = f"Coins: {self.score}"
-        # move_text = f"Movement:"
-        # iteration_text = f"Iterations:"
-        arcade.draw_text(score_text, 10, 10, arcade.csscolor.WHITE, 20)
+        arcade.draw_text(coins_text, 10, 10, arcade.csscolor.WHITE, 15)
+        arcade.draw_text(iteration_text, 10, 30, arcade.csscolor.WHITE, 15)
+        arcade.draw_text(move_text, 10, 50, arcade.csscolor.WHITE, 15)
+        arcade.draw_text(score_text, 10, 70, arcade.csscolor.WHITE, 15)
+
+    def on_key_press(self, key, modifiers):
+        if key == arcade.key.R:
+            self.__agent.reset()
+            self.__iteration += 1
 
     def on_update(self, delta_time):
-        if self.score != self.__agent.environment.goal:
+        if self.__agent.coins != self.__agent.environment.goal:
             coin_hit_list = arcade.check_for_collision_with_list(self.player, self.scene.get_sprite_list("Coins"))
             boost_hit_list = arcade.check_for_collision_with_list(self.player, self.scene.get_sprite_list("Boosts"))
             action = self.__agent.best_action()
@@ -73,10 +81,9 @@ class Game(arcade.Window):
             for coin in coin_hit_list:
                 coin.remove_from_sprite_lists()
                 # arcade.play_sound(self.collect_coin_sound)
-                self.score += 1
+                self.__agent.add_coin(1)
 
             for boost in boost_hit_list:
                 boost.remove_from_sprite_lists()
-                arcade.play_sound(self.collect_boost_sound)
-                self.boost_count_up = 0
+                # arcade.play_sound(self.collect_boost_sound)
             self.update_agent()

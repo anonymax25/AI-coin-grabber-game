@@ -5,9 +5,8 @@ RIGHT = 'R'
 GOAL = 96
 
 # Set rewards
-REWARD_BORDER = -100
-REWARD_EMPTY = -2
-REWARD_GOAL = 10
+REWARD_BORDER = -10
+REWARD_EMPTY = -3
 REWARD_COIN = 5
 
 # Set how many rows and columns we will have
@@ -37,20 +36,19 @@ class Environment:
         self.__goal = GOAL
         self.width = COLUMN_COUNT
         self.height = ROW_COUNT
-
         for row in range(ROW_COUNT):
             for column in range(COLUMN_COUNT):
                 self.__states[(row, column)] = MAZE[row][column]
                 if MAZE[row][column] == 5:
-                    self.__start = (row, column)
-
-    @property
-    def start(self):
-        return self.__start
+                    self.__player_start = (row, column)
 
     @property
     def goal(self):
         return self.__goal
+
+    @property
+    def player_start(self):
+        return self.__player_start
 
     @property
     def states(self):
@@ -59,9 +57,17 @@ class Environment:
     def get_content(self, state):
         return self.__states[state]
 
+    def start(self):
+        for row in range(ROW_COUNT):
+            for column in range(COLUMN_COUNT):
+                self.__states[(row, column)] = MAZE[row][column]
+                if MAZE[row][column] == 5:
+                    self.__player_start = (row, column)
+
     def apply(self, agent, action):
         state = agent.state
         new_state = None
+        reward = None
 
         if action == UP:
             new_state = (state[0] - 1, state[1])
@@ -81,5 +87,4 @@ class Environment:
                 self.__states[new_state] = 0
             else:
                 reward = REWARD_EMPTY
-
         agent.update(action, new_state, reward)

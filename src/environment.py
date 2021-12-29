@@ -2,7 +2,7 @@ UP = 'U'
 DOWN = 'D'
 LEFT = 'L'
 RIGHT = 'R'
-GOAL = 97
+GOAL = 96
 
 # Set rewards
 REWARD_BORDER = -100
@@ -61,6 +61,8 @@ class Environment:
 
     def apply(self, agent, action):
         state = agent.state
+        new_state = None
+
         if action == UP:
             new_state = (state[0] - 1, state[1])
         elif action == DOWN:
@@ -73,6 +75,7 @@ class Environment:
         if new_state in self.__states:
             if self.__states[new_state] == 3:
                 reward = REWARD_BORDER
+                new_state = state
             elif self.__states[new_state] in [2, 4]:
                 reward = REWARD_COIN
                 self.__states[new_state] = 0

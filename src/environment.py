@@ -2,7 +2,7 @@ UP = 'U'
 DOWN = 'D'
 LEFT = 'L'
 RIGHT = 'R'
-GOAL = 96
+GOAL = 100
 
 # Set rewards
 REWARD_BORDER = -10

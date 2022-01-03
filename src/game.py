@@ -81,9 +81,18 @@ class Game(arcade.View):
         arcade.draw_text(avg_score_text, 300, 50, arcade.csscolor.WHITE, 15)
 
         arcade.draw_text(
+            "Mode: manual" if self.__manual else "Mode: AI",
+            start_x=self.window.width - 300,
+            start_y=50,
+            color=arcade.color.LIGHT_GRAY,
+            font_size=20,
+            bold=True
+        )
+        
+        arcade.draw_text(
             "Esc to go to menu",
             start_x=self.window.width - 300,
-            start_y=30,
+            start_y=20,
             color=arcade.color.LIGHT_GRAY,
             font_size=20,
             bold=True
@@ -110,8 +119,7 @@ class Game(arcade.View):
 
 
     def on_update(self, delta_time):
-        if self.__agent.coins < 15:
-        # if self.__agent.coins != self.__agent.environment.goal:
+        if self.__agent.coins < self.__agent.environment.goal:
             coin_hit_list = arcade.check_for_collision_with_list(self.player, self.window.scene.get_sprite_list("Coins"))
             boost_hit_list = arcade.check_for_collision_with_list(self.player, self.window.scene.get_sprite_list("Boosts"))
             

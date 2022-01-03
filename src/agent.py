@@ -70,7 +70,8 @@ class Agent:
         return best
 
     def do(self, action):
-        self.__environment.apply(self, action)
+        if action != None:
+            self.__environment.apply(self, action)
 
     def reset(self):
         self.__state = self.__environment.player_start

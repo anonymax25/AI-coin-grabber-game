@@ -10,8 +10,9 @@ boost_image_source = ":resources:images/items/gemBlue.png"
 wall_image_source = ":resources:images/tiles/grassCenter_round.png"
 player_image_source = ":resources:images/animated_characters/robot/robot_idle.png"
 
+
 class Game(arcade.View):
-    def __init__(self, agent, manual = False):
+    def __init__(self, agent, manual=False):
         super().__init__()
         self.__manual = manual
         self.__manualAction = None
@@ -88,7 +89,7 @@ class Game(arcade.View):
             font_size=20,
             bold=True
         )
-        
+
         arcade.draw_text(
             "Esc to go to menu",
             start_x=self.window.width - 300,
@@ -116,13 +117,13 @@ class Game(arcade.View):
             elif key == arcade.key.RIGHT:
                 self.__manualAction = RIGHT
 
-
-
     def on_update(self, delta_time):
         if self.__agent.coins < self.__agent.environment.goal:
-            coin_hit_list = arcade.check_for_collision_with_list(self.player, self.window.scene.get_sprite_list("Coins"))
-            boost_hit_list = arcade.check_for_collision_with_list(self.player, self.window.scene.get_sprite_list("Boosts"))
-            
+            coin_hit_list = arcade.check_for_collision_with_list(self.player,
+                                                                 self.window.scene.get_sprite_list("Coins"))
+            boost_hit_list = arcade.check_for_collision_with_list(self.player,
+                                                                  self.window.scene.get_sprite_list("Boosts"))
+
             action = None
             if self.__manual == True:
                 action = self.__manualAction
@@ -142,14 +143,14 @@ class Game(arcade.View):
             self.update_agent()
         else:
             self.__lastScore = self.__agent.score
-                
+
             if self.__highScore == None or self.__highScore < self.__agent.score:
                 self.__highScore = self.__agent.score
 
             if self.__averageScore == None:
                 self.__averageScore = self.__agent.score
             else:
-                self.__averageScore += (self.__agent.score - self.__averageScore ) / self.__iteration            
+                self.__averageScore += (self.__agent.score - self.__averageScore) / self.__iteration
 
             self.__agent.reset()
             self.__iteration += 1

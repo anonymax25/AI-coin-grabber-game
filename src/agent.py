@@ -1,4 +1,5 @@
 from random import *
+import pickle
 
 UP = 'U'
 DOWN = 'D'
@@ -79,12 +80,13 @@ class Agent:
         self.__last_action = None
         self.__score = 0
         self.__coins = 0
+        self.save("agent.dat")
         self.environment.start()
 
-    # def save(self, filename):
-    #     with open(filename, 'wb') as file:
-    #         pickle.dump(self.__qtable, file)
+    def save(self, filename):
+        with open(filename, 'wb') as file:
+            pickle.dump(self.__qtable, file)
 
-    # def load(self, filename):
-    #     with open(filename, 'rb') as file:
-    #         self.__qtable = pickle.load(file)
+    def load(self, filename):
+        with open(filename, 'rb') as file:
+            self.__qtable = pickle.load(file)

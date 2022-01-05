@@ -62,8 +62,6 @@ class Environment:
         for row in range(ROW_COUNT):
             for column in range(COLUMN_COUNT):
                 self.__states[(row, column)] = MAZE[row][column]
-                if MAZE[row][column] == 5:
-                    self.__player_start = (row, column)
 
     def apply(self, agent, action):
         state = agent.state

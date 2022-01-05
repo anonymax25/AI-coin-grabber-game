@@ -124,11 +124,11 @@ class Game(arcade.View):
             boost_hit_list = arcade.check_for_collision_with_list(self.player,
                                                                   self.window.scene.get_sprite_list("Boosts"))
 
-            action = None
-            if self.__manual == True:
+            if self.__manual:
                 action = self.__manualAction
             else:
                 action = self.__agent.best_action()
+
             self.__agent.do(action)
             self.__manualAction = None
 

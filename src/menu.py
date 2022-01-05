@@ -1,8 +1,12 @@
 import arcade
 import arcade.gui
+import os
+
 from src.agent import Agent
 from src.environment import Environment
 from src.game import Game
+
+FILE = 'agent.dat'
 
 
 class Menu(arcade.View):
@@ -44,6 +48,8 @@ class Menu(arcade.View):
     def on_click_start_ia(self, event):
         environment = Environment()
         agent = Agent(environment)
+        if os.path.exists(FILE):
+            agent.load(FILE)
         game_view = Game(agent, manual=False)
         self.window.show_view(game_view)
         game_view.setup()
@@ -53,5 +59,4 @@ class Menu(arcade.View):
 
     def on_draw(self) -> None:
         arcade.start_render()
-
         self.manager.draw()

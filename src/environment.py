@@ -5,10 +5,9 @@ RIGHT = 'R'
 GOAL = 100
 
 # Set rewards
-REWARD_BORDER = -10
+REWARD_BORDER = -20
 REWARD_EMPTY = -3
-REWARD_COIN = 5
-REWARD_BOOST = 10
+REWARD_COIN = 10
 
 # Set how many rows and columns we will have
 ROW_COUNT = 12

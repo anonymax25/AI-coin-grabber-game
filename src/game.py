@@ -3,7 +3,6 @@ import arcade
 from src.agent import DOWN, LEFT, RIGHT, UP
 
 SPRITE_SIZE = 55
-SCREEN_TITLE = "AI PAC-MAN"
 
 coin_image_source = ":resources:images/items/gemYellow.png"
 boost_image_source = ":resources:images/items/gemBlue.png"

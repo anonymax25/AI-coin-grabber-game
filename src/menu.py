@@ -6,7 +6,8 @@ from src.agent import Agent
 from src.environment import Environment
 from src.game import Game
 
-FILE = 'agent.dat'
+FILE_TABLE = 'agent.dat'
+FILE_INFORMATION = 'game.dat'
 
 
 class Menu(arcade.View):
@@ -48,9 +49,11 @@ class Menu(arcade.View):
     def on_click_start_ia(self, event):
         environment = Environment()
         agent = Agent(environment)
-        if os.path.exists(FILE):
-            agent.load(FILE)
+        if os.path.exists(FILE_TABLE):
+            agent.load_table(FILE_TABLE)
         game_view = Game(agent, manual=False)
+        if os.path.exists(FILE_INFORMATION):
+            game_view.load_information(FILE_INFORMATION)
         self.window.show_view(game_view)
         game_view.setup()
 

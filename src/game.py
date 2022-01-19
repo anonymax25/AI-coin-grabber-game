@@ -1,4 +1,5 @@
 import arcade
+import pickle
 
 from src.agent import DOWN, LEFT, RIGHT, UP
 
@@ -8,6 +9,8 @@ coin_image_source = ":resources:images/items/gemYellow.png"
 boost_image_source = ":resources:images/items/gemBlue.png"
 wall_image_source = ":resources:images/tiles/grassCenter_round.png"
 player_image_source = ":resources:images/animated_characters/robot/robot_idle.png"
+
+FILE_INFORMATION = 'game.dat'
 
 
 class Game(arcade.View):
@@ -104,7 +107,7 @@ class Game(arcade.View):
             menu_view = Menu()
             self.window.show_view(menu_view)
         if key == arcade.key.R:
-            self.__agent.reset()
+            self.reset()
             self.__iteration += 1
         if self.__manual == True:
             if key == arcade.key.UP:
@@ -151,7 +154,7 @@ class Game(arcade.View):
             else:
                 self.__averageScore += (self.__agent.score - self.__averageScore) / self.__iteration
 
-            self.__agent.reset()
+            self.reset()
             self.__iteration += 1
             for state in self.__environment.states:
                 if self.__environment.get_content(state) == 2:
@@ -159,3 +162,16 @@ class Game(arcade.View):
                     coin.center_x = (state[1] + 0.5) * SPRITE_SIZE
                     coin.center_y = self.window.height - (state[0] + 0.5) * SPRITE_SIZE
                     self.window.scene.add_sprite("Coins", coin)
+
+    def save_information(self, filename):
+        information = (self.__iteration, self.__averageScore, self.__lastScore, self.__highScore)
+        with open(filename, 'wb') as file:
+            pickle.dump(information, file)
+
+    def load_information(self, filename):
+        with open(filename, 'rb') as file:
+            self.__iteration, self.__averageScore, self.__lastScore, self.__highScore = pickle.load(file)
+
+    def reset(self):
+        self.__agent.reset()
+        self.save_information(FILE_INFORMATION)

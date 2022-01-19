@@ -7,7 +7,12 @@ DOWN = 'D'
 LEFT = 'L'
 RIGHT = 'R'
 ACTIONS = [UP, DOWN, LEFT, RIGHT]
+
+FILE_TABLE = 'agent.dat'
+FILE_INFORMATION = 'game.dat'
+
 TEMPERATURE_DECAY_FACTOR = 0.99
+
 
 class Agent:
     def __init__(self, environment):
@@ -90,14 +95,15 @@ class Agent:
         self.__last_action = None
         self.__score = 0
         self.__coins = 0
+        self.save_table(FILE_TABLE)
         self.__temperature = 1
-        self.save("agent.dat")
+#         self.save("agent.dat")
         self.environment.start()
 
-    def save(self, filename):
+    def save_table(self, filename):
         with open(filename, 'wb') as file:
             pickle.dump(self.__qtable, file)
 
-    def load(self, filename):
+    def load_table(self, filename):
         with open(filename, 'rb') as file:
             self.__qtable = pickle.load(file)

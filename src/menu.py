@@ -30,11 +30,15 @@ class Menu(arcade.View):
         start_ia_button = arcade.gui.UIFlatButton(text="IA Mode", width=200)
         self.v_box.add(start_ia_button.with_space_around(bottom=20))
 
+        reset_button = arcade.gui.UIFlatButton(text="Reset IA Data", width=200)
+        self.v_box.add(reset_button.with_space_around(bottom=20))
+
         quit_button = arcade.gui.UIFlatButton(text="Quit", width=200)
         self.v_box.add(quit_button)
 
         start_button.on_click = self.on_click_start
         start_ia_button.on_click = self.on_click_start_ia
+        reset_button.on_click = self.on_click_reset
         quit_button.on_click = self.on_click_quit
 
         self.manager.add(arcade.gui.UIAnchorWidget(anchor_x="center_x", anchor_y="center_y", child=self.v_box))
@@ -56,6 +60,12 @@ class Menu(arcade.View):
             game_view.load_information(FILE_INFORMATION)
         self.window.show_view(game_view)
         game_view.setup()
+
+    def on_click_reset(self, event):
+        if os.path.exists(FILE_TABLE):
+            os.remove(FILE_TABLE)
+        if os.path.exists(FILE_INFORMATION):
+            os.remove(FILE_INFORMATION)
 
     def on_click_quit(self, event):
         arcade.exit()

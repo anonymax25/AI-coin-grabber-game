@@ -1,12 +1,11 @@
 import arcade
 import pickle
 
-from src.agent import DOWN, LEFT, RIGHT, UP
+from src.agent import ACTIONS, DOWN, LEFT, RIGHT, UP
 
 SPRITE_SIZE = 55
 
 coin_image_source = ":resources:images/items/gemYellow.png"
-boost_image_source = ":resources:images/items/gemBlue.png"
 wall_image_source = ":resources:images/tiles/grassCenter_round.png"
 player_image_source = ":resources:images/animated_characters/robot/robot_idle.png"
 
@@ -29,9 +28,7 @@ class Game(arcade.View):
         self.window.scene.add_sprite_list("Player")
         self.window.scene.add_sprite_list("Walls")
         self.window.scene.add_sprite_list("Coins")
-        self.window.scene.add_sprite_list("Boosts")
         self.collect_coin_sound = arcade.load_sound("./assets/sounds/coin-sound.wav")
-        self.collect_boost_sound = arcade.load_sound("./assets/sounds/boost-sound.wav")
 
     def setup(self):
         for state in self.__environment.states:
@@ -40,11 +37,6 @@ class Game(arcade.View):
                 coin.center_x = (state[1] + 0.5) * SPRITE_SIZE
                 coin.center_y = self.window.height - (state[0] + 0.5) * SPRITE_SIZE
                 self.window.scene.add_sprite("Coins", coin)
-            elif self.__environment.get_content(state) == 4:
-                boost = arcade.Sprite(boost_image_source, 0.5)
-                boost.center_x = (state[1] + 0.5) * SPRITE_SIZE
-                boost.center_y = self.window.height - (state[0] + 0.5) * SPRITE_SIZE
-                self.window.scene.add_sprite("Boosts", boost)
             elif self.__environment.get_content(state) == 5:
                 self.player = arcade.Sprite(player_image_source, 0.5)
                 self.player.center_x = (state[1] + 0.5) * SPRITE_SIZE
@@ -78,10 +70,12 @@ class Game(arcade.View):
         last_score_text = f"Last Score: {'None' if self.__lastScore == None else self.__lastScore}"
         high_score_text = f"High Score: {'None' if self.__highScore == None else self.__highScore}"
         avg_score_text = f"Avg Score: {'None' if self.__averageScore == None else format(self.__averageScore, '.2f')}"
+        temperature_score_text = f"Temperature: {'None' if self.__agent == None else format(self.__agent.temperature, '.2f')}"
 
         arcade.draw_text(last_score_text, 300, 10, arcade.csscolor.WHITE, 15)
         arcade.draw_text(high_score_text, 300, 30, arcade.csscolor.WHITE, 15)
         arcade.draw_text(avg_score_text, 300, 50, arcade.csscolor.WHITE, 15)
+        arcade.draw_text(temperature_score_text, 300, 70, arcade.csscolor.WHITE, 15)
 
         arcade.draw_text(
             "Mode: manual" if self.__manual else "Mode: AI",
@@ -123,8 +117,6 @@ class Game(arcade.View):
         if self.__agent.coins < self.__agent.environment.goal:
             coin_hit_list = arcade.check_for_collision_with_list(self.player,
                                                                  self.window.scene.get_sprite_list("Coins"))
-            boost_hit_list = arcade.check_for_collision_with_list(self.player,
-                                                                  self.window.scene.get_sprite_list("Boosts"))
 
             if self.__manual:
                 action = self.__manualAction
@@ -139,9 +131,6 @@ class Game(arcade.View):
                 # arcade.play_sound(self.collect_coin_sound)
                 self.__agent.add_coin(1)
 
-            for boost in boost_hit_list:
-                boost.remove_from_sprite_lists()
-                # arcade.play_sound(self.collect_boost_sound)
             self.update_agent()
         else:
             self.__lastScore = self.__agent.score

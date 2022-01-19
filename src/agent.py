@@ -1,3 +1,4 @@
+from cmath import log
 from random import *
 import pickle
 
@@ -10,6 +11,9 @@ ACTIONS = [UP, DOWN, LEFT, RIGHT]
 FILE_TABLE = 'agent.dat'
 FILE_INFORMATION = 'game.dat'
 
+TEMPERATURE_DECAY_FACTOR = 0.99
+
+
 class Agent:
     def __init__(self, environment):
         self.__environment = environment
@@ -19,6 +23,7 @@ class Agent:
         self.__actions = 0
         self.__last_action = None
         self.__score = 0
+        self.__temperature = 1
         self.__coins = 0
         self.__state = environment.player_start
         for s in environment.states:
@@ -50,6 +55,10 @@ class Agent:
     def environment(self):
         return self.__environment
 
+    @property
+    def temperature(self):
+        return self.__temperature
+
     def add_coin(self, coin):
         self.__coins += coin
 
@@ -65,6 +74,10 @@ class Agent:
         self.__score += reward
 
     def best_action(self):
+        self.__temperature = self.__temperature * TEMPERATURE_DECAY_FACTOR
+        if random() < self.__temperature:
+            return choice(ACTIONS)
+
         rewards = self.__qtable[self.__state]
         best = None
         for a in rewards:
@@ -83,6 +96,8 @@ class Agent:
         self.__score = 0
         self.__coins = 0
         self.save_table(FILE_TABLE)
+        self.__temperature = 1
+#         self.save("agent.dat")
         self.environment.start()
 
     def save_table(self, filename):

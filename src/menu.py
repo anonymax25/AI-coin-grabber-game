@@ -38,7 +38,7 @@ class Menu(arcade.View):
 
         start_button.on_click = self.on_click_start
         start_ia_button.on_click = self.on_click_start_ia
-        reset_button.on_click = self.on_click_reset
+        reset_button.on_click = self.on_click_reset_data
         quit_button.on_click = self.on_click_quit
 
         self.manager.add(arcade.gui.UIAnchorWidget(anchor_x="center_x", anchor_y="center_y", child=self.v_box))
@@ -61,7 +61,7 @@ class Menu(arcade.View):
         self.window.show_view(game_view)
         game_view.setup()
 
-    def on_click_reset(self, event):
+    def on_click_reset_data(self, event):
         if os.path.exists(FILE_TABLE):
             os.remove(FILE_TABLE)
         if os.path.exists(FILE_INFORMATION):

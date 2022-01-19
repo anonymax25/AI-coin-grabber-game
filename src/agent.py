@@ -1,6 +1,5 @@
-from cmath import log
-from random import *
 import pickle
+from random import *
 
 UP = 'U'
 DOWN = 'D'
@@ -9,7 +8,6 @@ RIGHT = 'R'
 ACTIONS = [UP, DOWN, LEFT, RIGHT]
 
 FILE_TABLE = 'agent.dat'
-FILE_INFORMATION = 'game.dat'
 
 TEMPERATURE_DECAY_FACTOR = 0.99
 
@@ -86,7 +84,7 @@ class Agent:
         return best
 
     def do(self, action):
-        if action != None:
+        if action is not None:
             self.__environment.apply(self, action)
 
     def reset(self):
@@ -97,7 +95,6 @@ class Agent:
         self.__coins = 0
         self.save_table(FILE_TABLE)
         self.__temperature = 1
-#         self.save("agent.dat")
         self.environment.start()
 
     def save_table(self, filename):

@@ -1,7 +1,7 @@
 import arcade
 import pickle
 
-from src.agent import ACTIONS, DOWN, LEFT, RIGHT, UP
+from src.agent import DOWN, LEFT, RIGHT, UP
 
 SPRITE_SIZE = 55
 
@@ -67,10 +67,10 @@ class Game(arcade.View):
         arcade.draw_text(move_text, 10, 50, arcade.csscolor.WHITE, 15)
         arcade.draw_text(score_text, 10, 70, arcade.csscolor.WHITE, 15)
 
-        last_score_text = f"Last Score: {'None' if self.__lastScore == None else self.__lastScore}"
-        high_score_text = f"High Score: {'None' if self.__highScore == None else self.__highScore}"
-        avg_score_text = f"Avg Score: {'None' if self.__averageScore == None else format(self.__averageScore, '.2f')}"
-        temperature_score_text = f"Temperature: {'None' if self.__agent == None else format(self.__agent.temperature, '.2f')}"
+        last_score_text = f"Last Score: {'None' if self.__lastScore is None else self.__lastScore}"
+        high_score_text = f"High Score: {'None' if self.__highScore is None else self.__highScore}"
+        avg_score_text = f"Avg Score: {'None' if self.__averageScore is None else format(self.__averageScore, '.2f')}"
+        temperature_score_text = f"Temperature: {'None' if self.__agent is None else format(self.__agent.temperature, '.2f')}"
 
         arcade.draw_text(last_score_text, 300, 10, arcade.csscolor.WHITE, 15)
         arcade.draw_text(high_score_text, 300, 30, arcade.csscolor.WHITE, 15)
@@ -103,7 +103,7 @@ class Game(arcade.View):
         if key == arcade.key.R:
             self.reset()
             self.__iteration += 1
-        if self.__manual == True:
+        if self.__manual is True:
             if key == arcade.key.UP:
                 self.__manualAction = UP
             elif key == arcade.key.DOWN:
@@ -117,7 +117,6 @@ class Game(arcade.View):
         if self.__agent.coins < self.__agent.environment.goal:
             coin_hit_list = arcade.check_for_collision_with_list(self.player,
                                                                  self.window.scene.get_sprite_list("Coins"))
-
             if self.__manual:
                 action = self.__manualAction
             else:
@@ -128,17 +127,16 @@ class Game(arcade.View):
 
             for coin in coin_hit_list:
                 coin.remove_from_sprite_lists()
-                # arcade.play_sound(self.collect_coin_sound)
                 self.__agent.add_coin(1)
 
             self.update_agent()
         else:
             self.__lastScore = self.__agent.score
 
-            if self.__highScore == None or self.__highScore < self.__agent.score:
+            if self.__highScore is None or self.__highScore < self.__agent.score:
                 self.__highScore = self.__agent.score
 
-            if self.__averageScore == None:
+            if self.__averageScore is None:
                 self.__averageScore = self.__agent.score
             else:
                 self.__averageScore += (self.__agent.score - self.__averageScore) / self.__iteration

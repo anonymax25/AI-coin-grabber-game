@@ -25,9 +25,13 @@ class Agent:
         self.__coins = 0
         self.__state = environment.player_start
         for s in environment.states:
-            self.__qtable[s] = {}
+            self.__qtable[(s[0], s[1], True)] = {}
+            self.__qtable[(s[0], s[1], False)] = {}
             for a in ACTIONS:
-                self.__qtable[s][a] = random() * 10.0
+                self.__qtable[(s[0], s[1], True)][a] = random() 
+                self.__qtable[(s[0], s[1], False)][a] = random()
+
+        print(self.__qtable)
 
     @property
     def state(self):
@@ -61,10 +65,8 @@ class Agent:
         self.__coins += coin
 
     def update(self, action, state, reward):
-        # update q-table
         maxQ = max(self.__qtable[state].values())
-        self.__qtable[self.__state][action] += self.__learning_rate * (reward + self.__discount_factor *
-                                                                       maxQ - self.__qtable[self.__state][action])
+        self.__qtable[self.__state][action] += self.__learning_rate * (reward + self.__discount_factor * maxQ - self.__qtable[self.__state][action])
 
         self.__state = state
         self.__last_action = action

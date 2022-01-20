@@ -1,3 +1,6 @@
+from pickle import FALSE
+
+
 UP = 'U'
 DOWN = 'D'
 LEFT = 'L'
@@ -10,7 +13,7 @@ REWARD_EMPTY = -3
 REWARD_COIN = 10
 
 # Set how many rows and columns we will have
-ROW_COUNT = 12
+ROW_COUNT = 11
 COLUMN_COUNT = 20
 
 # 22 Column - 12 rows - [0] space - [2] Coins - [3] Wall - [4] Boost - [5] Bot one - [6] Bot two
@@ -26,8 +29,21 @@ MAZE = [
     [3, 2, 3, 3, 2, 3, 2, 3, 3, 3, 3, 3, 3, 2, 3, 2, 3, 3, 2, 3],
     [3, 2, 2, 2, 2, 3, 2, 2, 2, 2, 2, 2, 2, 2, 3, 2, 2, 2, 2, 3],
     [3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3],
-    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
 ]
+
+# MAZE = [
+#     [3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3],
+#     [3, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 3],
+#     [3, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 3],
+#     [3, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 3],
+#     [3, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 3],
+#     [3, 2, 2, 2, 2, 2, 2, 2, 5, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 3],
+#     [3, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 3],
+#     [3, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 3],
+#     [3, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 3],
+#     [3, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 3],
+#     [3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3],
+# ]
 
 
 class Environment:
@@ -40,7 +56,7 @@ class Environment:
             for column in range(COLUMN_COUNT):
                 self.__states[(row, column)] = MAZE[row][column]
                 if MAZE[row][column] == 5:
-                    self.__player_start = (row, column)
+                    self.__player_start = (row, column, False)
 
     @property
     def goal(self):
@@ -63,7 +79,7 @@ class Environment:
                 self.__states[(row, column)] = MAZE[row][column]
 
     def apply(self, agent, action):
-        state = agent.state
+        state = (agent.state[0], agent.state[1])
         new_state = None
         reward = None
 
@@ -76,13 +92,17 @@ class Environment:
         elif action == RIGHT:
             new_state = (state[0], state[1] + 1)
 
+        is_gem = False
         if new_state in self.__states:
             if self.__states[new_state] == 3:
                 reward = REWARD_BORDER
                 new_state = state
-            elif self.__states[new_state] in [2, 4]:
+            elif self.__states[new_state] == 2:
                 reward = REWARD_COIN
+                is_gem = True
                 self.__states[new_state] = 0
             else:
                 reward = REWARD_EMPTY
+        new_state += (is_gem,)
+        
         agent.update(action, new_state, reward)

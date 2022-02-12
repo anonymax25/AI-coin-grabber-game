@@ -68,7 +68,7 @@ class Environment:
 
     @property
     def states(self):
-        return self.__states.keys()
+        return self.__states
 
     def get_content(self, state):
         return self.__states[state]

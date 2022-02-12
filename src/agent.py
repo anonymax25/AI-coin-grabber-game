@@ -9,7 +9,7 @@ ACTIONS = [UP, DOWN, LEFT, RIGHT]
 
 FILE_TABLE = 'agent.dat'
 
-TEMPERATURE_DECAY_FACTOR = 0.99
+TEMPERATURE_DECAY_FACTOR = 0.999
 
 
 class Agent:
@@ -17,7 +17,7 @@ class Agent:
         self.__environment = environment
         self.__qtable = {}
         self.__learning_rate = 1
-        self.__discount_factor = 1
+        self.__discount_factor = 0.5
         self.__actions = 0
         self.__last_action = None
         self.__score = 0
@@ -28,10 +28,8 @@ class Agent:
             self.__qtable[(s[0], s[1], True)] = {}
             self.__qtable[(s[0], s[1], False)] = {}
             for a in ACTIONS:
-                self.__qtable[(s[0], s[1], True)][a] = random() 
-                self.__qtable[(s[0], s[1], False)][a] = random()
-
-        print(self.__qtable)
+                self.__qtable[(s[0], s[1], True)][a] = 0.5 
+                self.__qtable[(s[0], s[1], False)][a] = 0.5
 
     @property
     def state(self):
@@ -74,16 +72,35 @@ class Agent:
         self.__score += reward
 
     def best_action(self):
-        self.__temperature = self.__temperature * TEMPERATURE_DECAY_FACTOR
-        if random() < self.__temperature:
-            return choice(ACTIONS)
+        has_gemes = []
+        
+        if self.__state[0] + 1 >= 0 and self.__state[0] + 1 <= self.environment.width and self.__state[1] >= 0 and self.__state[1] <= self.environment.height and self.environment.states[(self.__state[0] + 1, self.__state[1])] is 2:
+            has_gemes.append(DOWN)
+        if self.__state[0] - 1 >= 0 and self.__state[0] - 1 <= self.environment.width and self.__state[1] >= 0 and self.__state[1] <= self.environment.height and self.environment.states[(self.__state[0] - 1, self.__state[1])] is 2:
+            has_gemes.append(UP)
+        if self.__state[0] >= 0 and self.__state[0] <= self.environment.width and self.__state[1] + 1 >= 0 and self.__state[1] + 1 <= self.environment.height and self.environment.states[(self.__state[0], self.__state[1] + 1)] is 2:
+            has_gemes.append(RIGHT)
+        if self.__state[0] >= 0 and self.__state[0] <= self.environment.width and self.__state[1] - 1 >= 0 and self.__state[1] - 1 <= self.environment.height and self.environment.states[(self.__state[0], self.__state[1] - 1)] is 2:
+            has_gemes.append(LEFT)
 
         rewards = self.__qtable[self.__state]
-        best = None
-        for a in rewards:
-            if best is None or rewards[a] > rewards[best]:
-                best = a
-        return best
+
+        if len(has_gemes) > 0:
+            best = None
+            for adjacent in has_gemes:
+                if best is None or rewards[adjacent] > rewards[best]:
+                    best = adjacent
+            return best
+        else:
+            self.__temperature = self.__temperature * TEMPERATURE_DECAY_FACTOR
+            if random() < self.__temperature:
+                return choice(ACTIONS)
+            rewards = self.__qtable[self.__state]
+            best = None
+            for a in rewards:
+                if best is None or rewards[a] > rewards[best]:
+                    best = a
+            return best
 
     def do(self, action):
         if action is not None:

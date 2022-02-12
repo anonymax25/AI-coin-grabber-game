@@ -100,6 +100,7 @@ class Game(arcade.View):
             from src.menu import Menu
             menu_view = Menu()
             self.window.show_view(menu_view)
+            self.reset()
         if key == arcade.key.R:
             self.reset()
             self.__iteration += 1

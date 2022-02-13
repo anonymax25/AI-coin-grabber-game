@@ -1,3 +1,5 @@
+import os
+
 import arcade
 import pickle
 
@@ -10,6 +12,7 @@ wall_image_source = ":resources:images/tiles/grassCenter_round.png"
 player_image_source = ":resources:images/animated_characters/robot/robot_idle.png"
 
 FILE_INFORMATION = 'game.dat'
+FILE_STATS = 'stats.dat'
 
 
 class Game(arcade.View):
@@ -24,6 +27,7 @@ class Game(arcade.View):
         self.__lastScore = None
         self.__averageScore = None
         self.__highScore = None
+        self.__stats = []
         self.window.scene = arcade.Scene()
         self.window.scene.add_sprite_list("Player")
         self.window.scene.add_sprite_list("Walls")
@@ -159,6 +163,25 @@ class Game(arcade.View):
         with open(filename, 'rb') as file:
             self.__iteration, self.__averageScore, self.__lastScore, self.__highScore = pickle.load(file)
 
+    @property
+    def stats(self):
+        return self.__stats
+
+    def save_stats(self, filename):
+        if os.path.exists(FILE_STATS):
+            self.load_stats(filename)
+        self.__stats.append(self.__lastScore)
+        with open(filename, 'wb') as file:
+            pickle.dump(self.__stats, file)
+
+    def load_stats(self, filename):
+        try:
+            with open(filename, 'rb') as file:
+                self.__stats = pickle.load(file)
+        except EOFError:
+            self.__stats = []
+
     def reset(self):
         self.__agent.reset()
         self.save_information(FILE_INFORMATION)
+        self.save_stats(FILE_STATS)

@@ -22,8 +22,8 @@ class Graph(arcade.View):
     def draw_figure(self, fig):
         ax = fig.add_subplot(111)
         ax.set_title("statistics", fontsize=22)
-        ax.set_xlabel('Score', fontsize=18)
-        ax.set_ylabel('Iterations', fontsize=18)
+        ax.set_xlabel('Iterations', fontsize=18)
+        ax.set_ylabel('Score', fontsize=18)
         ax.plot(self.__x, self.__y)
 
     def setup(self):

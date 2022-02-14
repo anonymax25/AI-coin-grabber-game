@@ -1,9 +1,13 @@
 import PIL.Image
 import arcade
-import pyglet
-from pyglet.gl import *
 from matplotlib.backends.backend_agg import FigureCanvasAgg
 from matplotlib.figure import Figure
+
+
+def render_figure(fig):
+    canvas = FigureCanvasAgg(fig)
+    data, size = canvas.print_to_buffer()
+    return PIL.Image.frombuffer("RGBA", size, data)
 
 
 class Graph(arcade.View):
@@ -13,11 +17,6 @@ class Graph(arcade.View):
         self.__y = y
         self.__image = None
         self.setup()
-
-    def render_figure(self, fig):
-        canvas = FigureCanvasAgg(fig)
-        data, size = canvas.print_to_buffer()
-        return PIL.Image.frombuffer("RGBA" ,size, data)
 
     def draw_figure(self, fig):
         ax = fig.add_subplot(111)
@@ -30,14 +29,14 @@ class Graph(arcade.View):
         dpi_res = min(self.window.width, self.window.height) / 10
         fig = Figure((self.window.width / dpi_res, self.window.height / dpi_res), dpi=dpi_res)
         self.draw_figure(fig)
-        self.__image = self.render_figure(fig)
+        self.__image = render_figure(fig)
 
     def on_draw(self):
         arcade.start_render()
         self.window.scene.draw()
         width = self.window.width
         height = self.window.height
-        arcade.Texture("stats", self.__image).draw_sized(width/2, height/2, width, height)
+        arcade.Texture("stats", self.__image).draw_sized(width / 2, height / 2, width, height)
 
     def on_key_press(self, key, modifiers):
         if key == arcade.key.ESCAPE:

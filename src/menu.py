@@ -1,6 +1,3 @@
-import sys
-import threading
-
 import arcade
 import arcade.gui
 import os
@@ -75,6 +72,8 @@ class Menu(arcade.View):
             os.remove(FILE_TABLE)
         if os.path.exists(FILE_INFORMATION):
             os.remove(FILE_INFORMATION)
+        if os.path.exists(FILE_STATS):
+            os.remove(FILE_STATS)
 
     def on_click_quit(self, event):
         arcade.exit()
@@ -87,7 +86,6 @@ class Menu(arcade.View):
             game_view.load_stats(FILE_STATS)
         graph_view = Graph([*range(0, len(game_view.stats), 1)], game_view.stats)
         self.window.show_view(graph_view)
-
 
     def on_draw(self) -> None:
         arcade.start_render()

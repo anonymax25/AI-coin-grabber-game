@@ -16,7 +16,7 @@ class Agent:
     def __init__(self, environment):
         self.__environment = environment
         self.__qtable = {}
-        self.__learning_rate = 1
+        self.__learning_rate = 0.75
         self.__discount_factor = 0.5
         self.__actions = 0
         self.__last_action = None

@@ -1,2 +1,4 @@
-arcade
+arcade~=2.6.5
 pickle-mixin
+Pillow~=8.4.0
+matplotlib~=3.5.1

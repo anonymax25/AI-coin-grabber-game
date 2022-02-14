@@ -120,8 +120,6 @@ class Game(arcade.View):
 
     def on_update(self, delta_time):
         if self.__agent.coins < self.__agent.environment.goal:
-            coin_hit_list = arcade.check_for_collision_with_list(self.player,
-                                                                 self.window.scene.get_sprite_list("Coins"))
             if self.__manual:
                 action = self.__manualAction
             else:
@@ -130,6 +128,7 @@ class Game(arcade.View):
             self.__agent.do(action)
             self.__manualAction = None
 
+            coin_hit_list = arcade.check_for_collision_with_list(self.player, self.window.scene.get_sprite_list("Coins"))
             for coin in coin_hit_list:
                 coin.remove_from_sprite_lists()
                 self.__agent.add_coin(1)

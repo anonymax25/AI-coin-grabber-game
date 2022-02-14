@@ -132,3 +132,4 @@ dmypy.json
 .idea/
 agent.dat
 game.dat
+stats.dat

@@ -9,7 +9,7 @@ ACTIONS = [UP, DOWN, LEFT, RIGHT]
 
 FILE_TABLE = 'agent.dat'
 
-TEMPERATURE_DECAY_FACTOR = 0.999
+TEMPERATURE_DECAY_FACTOR = 0.99
 
 
 class Agent:
@@ -83,15 +83,15 @@ class Agent:
         if self.__state[0] >= 0 and self.__state[0] <= self.environment.width and self.__state[1] - 1 >= 0 and self.__state[1] - 1 <= self.environment.height and self.environment.states[(self.__state[0], self.__state[1] - 1)] is 2:
             has_gemes.append(LEFT)
 
-        rewards = self.__qtable[self.__state]
-
         if len(has_gemes) > 0:
+            rewards = self.__qtable[(self.__state[0], self.__state[1], True)]
             best = None
             for adjacent in has_gemes:
                 if best is None or rewards[adjacent] > rewards[best]:
                     best = adjacent
             return best
         else:
+            rewards = self.__qtable[(self.__state[0], self.__state[1], False)]
             self.__temperature = self.__temperature * TEMPERATURE_DECAY_FACTOR
             if random() < self.__temperature:
                 return choice(ACTIONS)
